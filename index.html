@@ -165,14 +165,17 @@ async function loadSchools(cluster) {
   });
 
   const data = await res.json(); /* array */
-  
+  console.log(data);
   const select = document.getElementById("schoolSelect");
-  console.log(select)
+  
 
   select.innerHTML = `<option value="">Select establishment</option>`;
-  data.schools.forEach(s =>
+  /* data.schools.forEach(s =>
     select.innerHTML += `<option value="${s}">${s}</option>`
-  );
+  ); */
+  /* for (const schools in data) {
+    
+  } */
 
   document.getElementById("schoolSection").style.display = "block";
 }
