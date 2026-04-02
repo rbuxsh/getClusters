@@ -165,6 +165,8 @@ async function loadSchools(cluster) {
   });
 
   const data = await res.json();
+  console.log("Schools response:", data); // ✅ DEBUG
+
   const select = document.getElementById("schoolSelect");
 
   let schools = data.schools || data;
@@ -176,20 +178,18 @@ async function loadSchools(cluster) {
     const schoolName =
       typeof item === "string"
         ? item
-        : item?.school;
+        : item.school;
 
-    // ✅ HARD FILTER
     if (
       typeof schoolName !== "string" ||
       schoolName.trim() === "" ||
       schoolName === "#N/A"
-    ) {
-      return;
-    }
+    ) return;
 
     select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
 
+  // ✅ THIS WAS MISSING
   document.getElementById("schoolSection").style.display = "block";
 }
 
