@@ -149,37 +149,39 @@ async function loadSchools(cluster) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "getSchools", cluster })
   });
+
   const data = await res.json();
   const select = document.getElementById("schoolSelect");
 
-  let schoolsArray = data.schools || data;
-  if (!Array.isArray(schoolsArray)) schoolsArray = [];
+  // ✅ NORMALISE schools array
+  let schools = data.schools || data;
+  if (!Array.isArray(schools)) schools = [];
 
   select.innerHTML = `<option value="">Select establishment</option>`;
 
-  schoolsArray.forEach(item => {
-    let schoolName = null;
+  schools.forEach(item => {
+    // ✅ EXTRACT STRING VALUE ONLY
+    const schoolName =
+      typeof item === "string"
+        ? item
+        : item?.school || item?.Title;
 
-    if (typeof item === "string") {
-      schoolName = item;
-    } else if (typeof item === "number") {
-      schoolName = item.toString();
-    } else if (typeof item === "object" && item !== null) {
-      // Try common property names
-      schoolName = item.Name || item.SchoolName || item.Value || item.Title || item.Text || item.Label;
-      if (!schoolName) {
-        console.warn("Unknown school object:", item);
-        return; // skip this item
-      }
+    // ✅ HARD FILTER (same as clusters)
+    if (
+      typeof schoolName !== "string" ||
+      schoolName.trim() === ""
+    ) {
+      return;
     }
 
-    if (schoolName) {
-      select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
-    }
+    select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
 
+  // ✅ ENABLE + SHOW school dropdown
+  select.disabled = false;
   document.getElementById("schoolSection").style.display = "block";
 }
+
 
 /* ================= LOAD FACILITIES ================= */
 async function loadFacilities(cluster, school) {
