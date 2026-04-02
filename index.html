@@ -103,7 +103,9 @@ button {
 <div id="schoolSection" class="section">
   <fieldset>
     <legend>Establishment</legend>
-    <select id="schoolSelect"></select>
+    <select id="schoolSelect">
+        <option value="">School Loading…</option>
+          </select>
   </fieldset>
 </div>
 
@@ -158,9 +160,9 @@ async function loadSchools(cluster) {
   if (!Array.isArray(schools)) schools = [];
 
   select.innerHTML = `<option value="">Select establishment</option>`;
-
-  schools.forEach(item => {
-    let schools = typeof item === "string" ? item : (item.school || item.Value || item.Title || item);
+    schools.forEach(item => {
+      // If item is an object, try common property names
+    let schoolName = typeof item === "string" ? item : (item.school || item.Value || item.Title || item);
     select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
 }
