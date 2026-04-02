@@ -160,26 +160,9 @@ async function loadSchools(cluster) {
   select.innerHTML = `<option value="">Select establishment</option>`;
 
   schools.forEach(item => {
-    // ✅ EXTRACT STRING VALUE ONLY
-    const schoolName =
-      typeof item === "string"
-        ? item
-        : item?.school || item?.Title;
-
-    // ✅ HARD FILTER (same as clusters)
-    if (
-      typeof schoolName !== "string" ||
-      schoolName.trim() === ""
-    ) {
-      return;
-    }
-
+    let schools = typeof item === "string" ? item : (item.school || item.Value || item.Title || item);
     select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
-
-  // ✅ ENABLE + SHOW school dropdown
-  select.disabled = false;
-  document.getElementById("schoolSection").style.display = "block";
 }
 
 
