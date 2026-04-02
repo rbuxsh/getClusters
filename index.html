@@ -118,6 +118,34 @@ button {
   padding: 6px 10px;
   cursor: pointer;
 }
+  #timeSlotsSection {
+  margin-top: 32px;
+}
+
+.timeslot-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  padding: 12px;
+  background: #f7f7f7;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.timeslot-row button {
+  background: none;
+  border: none;
+  color: #c00000;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.empty-message {
+  padding: 12px;
+  background: #dff6ff;
+  border-radius: 6px;
+}
+``
   
 </style>
 </head>
@@ -156,7 +184,21 @@ button {
 <button type="submit">Submit Application</button>
 </div>
 
+  <!-- TIME SLOTS -->
+<div id="timeSlotsSection" class="section">
+  <h2>Time Slots</h2>
+
+  <div id="timeSlotsContent">
+    <p class="empty-message">
+      No time slots added. Click “Add another time slot” below.
+    </p>
+  </div>
+
+  <button type="button" id="addSlotBtn">+ Add another time slot</button>
+</div>
+  
 <script>
+  let selectedFacility = null;
 const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4cd48f8af3c54031bbd48566882f743e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K1MDVTz9REAxJjsPeW9JqZnCFw2jR-6IaFXtqOwnSWA";
 
 /* ================= LOAD CLUSTERS ================= */
@@ -260,43 +302,30 @@ async function loadFacilities(cluster, school) {
   </div>
 `;
 
-  tile.addEventListener("click", e => {
-  // Prevent clicks on inputs/buttons bubbling
-  if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+  tile.addEventListener("click", () => {
+  const isSelected = tile.classList.toggle("selected");
 
-  const cb = tile.querySelector("input");
-  cb.checked = !cb.checked;
-  tile.classList.toggle("selected", cb.checked);
+  // Deselect logic
+  if (!isSelected) {
+    selectedFacility = null;
+    document.getElementById("timeSlotsSection").style.display = "none";
+    document.getElementById("timeSlotsContent").innerHTML =
+      `<p class="empty-message">
+        No time slots added. Click “Add another time slot” below.
+       </p>`;
+    return;
+  }
 
-  const timeslotBox = tile.querySelector(".timeslots");
-  timeslotBox.style.display = cb.checked ? "block" : "none";
+  // Deselect all other tiles
+  document.querySelectorAll(".tile.selected").forEach(t => {
+    if (t !== tile) t.classList.remove("selected");
+  });
+
+  // Select this facility
+  selectedFacility = f.facility;
+
+  document.getElementById("timeSlotsSection").style.display = "block";
 });
-
-
-    container.appendChild(tile);
-  });
-
-  document.getElementById("facilitySection").style.display = "block";
-}
-  function createTimeSlot(slotsContainer) {
-  const slot = document.createElement("div");
-  slot.className = "timeslot";
-
-  slot.innerHTML = `
-    <input type="date" required>
-    <input type="time" required>
-    <input type="date" required>
-    <input type="time" required>
-    <button type="button">X</button>
-  `;
-
-  // Remove slot
-  slot.querySelector("button").addEventListener("click", () => {
-    slot.remove();
-  });
-
-  slotsContainer.appendChild(slot);
-}
 
 
 /* ================= EVENTS ================= */
@@ -316,8 +345,39 @@ document.getElementById("schoolSelect").addEventListener("change", e => {
   }
 });
 
+    function addTimeSlot() {
+  if (!selectedFacility) return;
+
+  const container = document.getElementById("timeSlotsContent");
+  const emptyMsg = container.querySelector(".empty-message");
+  if (emptyMsg) emptyMsg.remove();
+
+  const row = document.createElement("div");
+  row.className = "timeslot-row";
+
+  row.innerHTML = `
+    <input type="date">
+    <input type="time">
+    <input type="date">
+    <input type="time">
+    <button type="button">🗑 Remove</button>
+  `;
+
+  row.querySelector("button").addEventListener("click", () => {
+    row.remove();
+    if (!container.querySelector(".timeslot-row")) {
+      container.innerHTML =
+        `<p class="empty-message">
+          No time slots added. Click “Add another time slot” below.
+         </p>`;
+    }
+  });
+
+  container.appendChild(row);
+}
 /* INIT */
 loadClusters();
+    document.getElementById("addSlotBtn").addEventListener("click", addTimeSlot)
 </script>
 
 </body>
