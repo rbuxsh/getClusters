@@ -138,12 +138,33 @@ async function loadClusters() {
   if (!Array.isArray(clusters)) clusters = [];
 
   select.innerHTML = `<option value="">Select cluster</option>`;
-  clusters.forEach(item => {
+
+  
+clusters.forEach(item => {
+  let clusterName =
+    typeof item === "string"
+      ? item
+      : item?.cluster;
+
+  // ✅ HARD FILTER – this is the missing piece
+  if (
+    typeof clusterName !== "string" ||
+    clusterName.trim() === "" ||
+    clusterName === "#N/A"
+  ) {
+    return; // skip invalid values
+  }
+
+  select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
+});
+
+  
+  /*clusters.forEach(item => {
     // If item is an object, try common property names
     let clusterName = typeof item === "string" ? item : (item.cluster || item.Value || item.Title || item);
     select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
   });
-}
+}*/
 
 /* ================= LOAD SCHOOLS ================= */
 async function loadSchools(cluster) {
