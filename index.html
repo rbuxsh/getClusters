@@ -133,9 +133,10 @@ async function loadClusters() {
   const select = document.getElementById("clusterSelect");
 
   select.innerHTML = `<option value="">Select cluster</option>`;
-  data.clusters.forEach(c =>
-    select.innerHTML += `<option value="${c}">${c}</option>`
-  );
+  data.clusters.forEach(c => {
+  select.innerHTML += `<option value="${c.cluster}">${c.cluster}</option>`;
+});
+
 }
 
 /* ================= LOAD SCHOOLS ================= */
@@ -154,8 +155,20 @@ async function loadSchools(cluster) {
     select.innerHTML += `<option value="${s}">${s}</option>`
   );
 
-  document.getElementById("schoolSection").style.display = "block";
-}
+ // document.getElementById("schoolSection").style.display = "block";}
+
+  // this is temp
+document.getElementById("clusterSelect").addEventListener("change", e => {
+  console.log("Cluster value:", e.target.value, typeof e.target.value);
+
+  document.getElementById("schoolSection").style.display = "none";
+  document.getElementById("facilitySection").style.display = "none";
+
+  if (e.target.value) {
+    loadSchools(e.target.value);
+  }
+});
+/// temp end here----
 
 /* ================= LOAD FACILITIES ================= */
 async function loadFacilities(cluster, school) {
