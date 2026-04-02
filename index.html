@@ -164,9 +164,10 @@ async function loadSchools(cluster) {
     body: JSON.stringify({ action: "getSchools", cluster })
   });
 
-  const data = await res.json();
-  console.log(data);
+  const data = await res.json(); /* array */
+  
   const select = document.getElementById("schoolSelect");
+  console.log(select)
 
   select.innerHTML = `<option value="">Select establishment</option>`;
   data.schools.forEach(s =>
