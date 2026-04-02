@@ -128,14 +128,17 @@ async function loadClusters() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "getClusters" })
   });
-
   const data = await res.json();
   const select = document.getElementById("clusterSelect");
 
+  // Assume data.clusters is an array of lookup objects
+  let clusters = data.clusters || [];
   select.innerHTML = `<option value="">Select cluster</option>`;
-  data.clusters.forEach(c =>
-    select.innerHTML += `<option value="${c}">${c}</option>`
-  );
+  clusters.forEach(c => {
+    // Extract the display name – adjust property name if needed (Value, Title, etc.)
+    const clusterName = c.Value || c.Title || c;
+    select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
+  });
 }
 
 /* ================= LOAD SCHOOLS ================= */
