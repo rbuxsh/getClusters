@@ -95,7 +95,7 @@ button {
 <fieldset>
   <legend>Cluster / Area</legend>
   <select id="clusterSelect">
-    <option value="">Loading cluster…</option>
+    <option value="">Cluster Loading…</option>
   </select>
 </fieldset>
 
@@ -103,12 +103,9 @@ button {
 <div id="schoolSection" class="section">
   <fieldset>
     <legend>Establishment</legend>
-    <select id="schoolSelect" disabled>
-      <option value="">Select establishment</option>
-    </select>
+    <select id="schoolSelect"></select>
   </fieldset>
 </div>
-
 
 <!-- FACILITIES -->
 <div id="facilitySection" class="section">
@@ -137,7 +134,7 @@ async function loadClusters() {
   let clusters = data.clusters || data;
   if (!Array.isArray(clusters)) clusters = [];
 
-  select.innerHTML = `<option value="">Select cluster</option>`;  
+  select.innerHTML = `<option value="">Select cluster</option>`;
   clusters.forEach(item => {
     // If item is an object, try common property names
     let clusterName = typeof item === "string" ? item : (item.cluster || item.Value || item.Title || item);
