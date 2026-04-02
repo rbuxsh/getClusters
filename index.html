@@ -164,13 +164,13 @@ async function loadSchools(cluster) {
     body: JSON.stringify({ action: "getSchools", cluster })
   });
 
-  const data = await res.json();
+ /* const data = await res.json();
   const select = document.getElementById("schoolSelect");
 
   select.innerHTML = `<option value="">Select establishment</option>`;
   data.schools.forEach(s =>
     select.innerHTML += `<option value="${s}">${s}</option>`
-  );
+  );*/
 
   document.getElementById("schoolSection").style.display = "block";
 }
