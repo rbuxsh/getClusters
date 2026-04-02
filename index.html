@@ -166,28 +166,31 @@ async function loadSchools(cluster) {
 
   const data = await res.json();
   const select = document.getElementById("schoolSelect");
- // Find the array (either data.clusters or data itself)
+
   let schools = data.schools || data;
   if (!Array.isArray(schools)) schools = [];
 
   select.innerHTML = `<option value="">Select School</option>`;
+
   schools.forEach(item => {
-  const schoolrName =
-    typeof item === "string"
-      ? item
-      : item?.schools;
+    const schoolName =
+      typeof item === "string"
+        ? item
+        : item?.school;
 
-  // ✅ HARD FILTER (MANDATORY)
-  if (
-    typeof schoolrName !== "string" ||
-    schoolrName.trim() === "" ||
-    schoolrName === "#N/A"
-  ) {
-    return;
-  }
+    // ✅ HARD FILTER
+    if (
+      typeof schoolName !== "string" ||
+      schoolName.trim() === "" ||
+      schoolName === "#N/A"
+    ) {
+      return;
+    }
 
-  select.innerHTML += `<option value="${schoolrName}">${schoolrName}</option>`;
-});
+    select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
+  });
+
+  document.getElementById("schoolSection").style.display = "block";
 }
 
 
