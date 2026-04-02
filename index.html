@@ -130,30 +130,42 @@ async function loadClusters() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ action: "getClusters" })
   });
+
   const data = await res.json();
-   const select = document.getElementById("clusterSelect");
-  // Find the array (either data.clusters or data itself)
+  const select = document.getElementById("clusterSelect");
+
+  // Find the array
   let clusters = data.clusters || data;
   if (!Array.isArray(clusters)) clusters = [];
 
+  // 1. ✅ SORT CLUSTERS (ASCENDING A-Z)
+  clusters.sort((a, b) => {
+    // Determine the string name for 'a' and 'b'
+    const nameA = typeof a === "string" ? a : a?.cluster || "";
+    const nameB = typeof b === "string" ? b : b?.cluster || "";
+    
+    // Compare alphabetically
+    return nameA.localeCompare(nameB);
+  });
+
+  // 2. Reset the dropdown
   select.innerHTML = `<option value="">Select cluster</option>`;
+
+  // 3. Loop through sorted items
   clusters.forEach(item => {
-  const clusterName =
-    typeof item === "string"
-      ? item
-      : item?.cluster;
+    const clusterName = typeof item === "string" ? item : item?.cluster;
 
-  // ✅ HARD FILTER (MANDATORY)
-  if (
-    typeof clusterName !== "string" ||
-    clusterName.trim() === "" ||
-    clusterName === "#N/A"
-  ) {
-    return;
-  }
+    // ✅ HARD FILTER (MANDATORY)
+    if (
+      typeof clusterName !== "string" ||
+      clusterName.trim() === "" ||
+      clusterName === "#N/A"
+    ) {
+      return;
+    }
 
-  select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
-});
+    select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
+  });
 }
 
 /* ================= LOAD SCHOOLS ================= */
