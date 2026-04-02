@@ -103,7 +103,7 @@ button {
 <div id="schoolSection" class="section">
   <fieldset>
     <legend>Establishment</legend>
-    <select id="schoolSelect">
+    <select id="schoolSelect" disabled>
         <option value="">School Loading…</option>
           </select>
   </fieldset>
@@ -170,6 +170,7 @@ async function loadSchools(cluster) {
   let schools = data.schools || data;
   if (!Array.isArray(schools)) schools = [];
 
+  // Reset dropdown
   select.innerHTML = `<option value="">Select establishment</option>`;
 
   schools.forEach(item => {
@@ -179,17 +180,12 @@ async function loadSchools(cluster) {
         : item?.school || item?.Title;
 
     // ✅ HARD FILTER
-    if (
-      typeof schoolName !== "string" ||
-      schoolName.trim() === ""
-    ) {
-      return;
-    }
+    if (typeof schoolName !== "string" || schoolName.trim() === "") return;
 
     select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
 
-  // ✅ THESE TWO LINES WERE MISSING
+  // ✅ THESE TWO LINES WERE MISSING (CRITICAL)
   select.disabled = false;
   document.getElementById("schoolSection").style.display = "block";
 }
