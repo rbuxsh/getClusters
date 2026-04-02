@@ -167,12 +167,9 @@ async function loadSchools(cluster) {
   const data = await res.json(); 
   const select = document.getElementById("schoolSelect");
 
-  // 1. Sort data.schools in Descending order (Z-A)
-  data.schools.sort((a, b) => {
-    if (a.schools > b.schools) return -1; // Move 'a' up if it's "greater" (later in alphabet)
-    if (a.schools < b.schools) return 1;  // Move 'b' up
-    return 0;
-  });
+  // 1. Sort data.schools in ASCENDING order (A-Z)
+  // We use a.schools.localeCompare(b.schools) for A-Z
+  data.schools.sort((a, b) => a.schools.localeCompare(b.schools));
 
   // 2. Reset the dropdown
   select.innerHTML = `<option value="">Select establishment</option>`;
