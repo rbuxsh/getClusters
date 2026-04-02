@@ -171,7 +171,7 @@ async function loadSchools(cluster) {
   if (!Array.isArray(schools)) schools = [];
 
   select.innerHTML = `<option value="">Select School</option>`;
-  clusters.forEach(item => {
+  schools.forEach(item => {
   const schoolrName =
     typeof item === "string"
       ? item
