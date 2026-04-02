@@ -129,7 +129,7 @@ async function loadClusters() {
     body: JSON.stringify({ action: "getClusters" })
   });
   const data = await res.json();
-  console.log("Full response:", data);
+   console.log("Raw clusters response:", data);
   console.log("First cluster item:", data.clusters?.[0]);
 }
 
