@@ -165,16 +165,19 @@ async function loadSchools(cluster) {
   });
 
   const data = await res.json(); 
-  console.log(data); // This shows the object containing the schools array
-  
   const select = document.getElementById("schoolSelect");
 
-  // 1. Reset the dropdown
+  // 1. Sort data.schools in Descending order (Z-A)
+  data.schools.sort((a, b) => {
+    if (a.schools > b.schools) return -1; // Move 'a' up if it's "greater" (later in alphabet)
+    if (a.schools < b.schools) return 1;  // Move 'b' up
+    return 0;
+  });
+
+  // 2. Reset the dropdown
   select.innerHTML = `<option value="">Select establishment</option>`;
 
-  // 2. Loop through data.schools
-  // 's' is an object like { schools: 'Banff Academy' }
-  // So we use s.schools to get the name
+  // 3. Loop through sorted data.schools
   data.schools.forEach(s => {
     select.innerHTML += `<option value="${s.schools}">${s.schools}</option>`;
   }); 
