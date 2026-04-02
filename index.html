@@ -175,7 +175,7 @@ async function loadSchools(cluster) {
   const schoolrName =
     typeof item === "string"
       ? item
-      : item?.Title;
+      : item?.schools;
 
   // ✅ HARD FILTER (MANDATORY)
   if (
