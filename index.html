@@ -95,7 +95,7 @@ button {
 <fieldset>
   <legend>Cluster / Area</legend>
   <select id="clusterSelect">
-    <option value="">Loading…</option>
+    <option value="">Cluster Loading…</option>
   </select>
 </fieldset>
 
@@ -129,16 +129,8 @@ async function loadClusters() {
     body: JSON.stringify({ action: "getClusters" })
   });
   const data = await res.json();
-  const select = document.getElementById("clusterSelect");
-
-  // Assume data.clusters is an array of lookup objects
-  let clusters = data.clusters || [];
-  select.innerHTML = `<option value="">Select cluster</option>`;
-  clusters.forEach(c => {
-    // Extract the display name – adjust property name if needed (Value, Title, etc.)
-    const clusterName = c.Value || c.Title || c;
-    select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
-  });
+  console.log("Full response:", data);
+  console.log("First cluster item:", data.clusters?.[0]);
 }
 
 /* ================= LOAD SCHOOLS ================= */
