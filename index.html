@@ -157,13 +157,13 @@ async function loadSchools(cluster) {
   if (!Array.isArray(schoolsArray)) schoolsArray = [];
 
   select.innerHTML = `<option value="">Select establishment</option>`;
-  schools.forEach(item => {
+  schoolsArray.forEach(item => {
     // Extract string from object if needed
     let schoolName = typeof item === "string" ? item : (item.Value || item.Title || item);
     select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
 
-  document.getElementById("schoolSection").style.display = "block";
+  //document.getElementById("schoolSection").style.display = "block";
 }
 
 /* ================= LOAD FACILITIES ================= */
