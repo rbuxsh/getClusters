@@ -164,18 +164,20 @@ async function loadSchools(cluster) {
     body: JSON.stringify({ action: "getSchools", cluster })
   });
 
-  const data = await res.json(); /* array */
-  console.log(data);
-  const select = document.getElementById("schoolSelect");
+  const data = await res.json(); 
+  console.log(data); // This shows the object containing the schools array
   
+  const select = document.getElementById("schoolSelect");
 
+  // 1. Reset the dropdown
   select.innerHTML = `<option value="">Select establishment</option>`;
-  /* data.schools.forEach(s =>
-    select.innerHTML += `<option value="${s}">${s}</option>`
-  ); */
-  /* for (const schools in data) {
-    
-  } */
+
+  // 2. Loop through data.schools
+  // 's' is an object like { schools: 'Banff Academy' }
+  // So we use s.schools to get the name
+  data.schools.forEach(s => {
+    select.innerHTML += `<option value="${s.schools}">${s.schools}</option>`;
+  }); 
 
   document.getElementById("schoolSection").style.display = "block";
 }
