@@ -158,34 +158,29 @@ async function loadClusters() {
 
 /* ================= LOAD SCHOOLS ================= */
 async function loadSchools(cluster) {
-  const res = await fetch(FLOW_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "getSchools", cluster })
-  });
-
+  const res = await fetch(FLOW_URL, { ... });
   const data = await res.json();
-  const select = document.getElementById("schoolSelect");
+  console.log("Schools response:", data);  // ← check this
 
+  const select = document.getElementById("schoolSelect");
   let schools = data.schools || data;
   if (!Array.isArray(schools)) schools = [];
 
-  // Reset dropdown
   select.innerHTML = `<option value="">Select establishment</option>`;
 
   schools.forEach(item => {
-    const schoolName =
-      typeof item === "string"
-        ? item
-        : item?.school || item?.Title;
-
-    // ✅ HARD FILTER
-    if (typeof schoolName !== "string" || schoolName.trim() === "") return;
-
-    select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
+    let schoolName = null;
+    if (typeof item === "string") {
+      schoolName = item;
+    } else if (typeof item === "object" && item !== null) {
+      // Try common property names used by SharePoint lookups
+      schoolName = item.Value || item.Title || item.Name || item.school || item.SchoolName;
+    }
+    if (schoolName && typeof schoolName === "string" && schoolName.trim() !== "") {
+      select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
+    }
   });
 
-  // ✅ THESE TWO LINES WERE MISSING (CRITICAL)
   select.disabled = false;
   document.getElementById("schoolSection").style.display = "block";
 }
