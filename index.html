@@ -83,6 +83,42 @@ button {
   border: none;
   font-size: 18px;
 }
+  .timeslots {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px dashed #ccc;
+  background: #fafafa;
+}
+
+.timeslot {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.timeslot input {
+  padding: 6px;
+  font-size: 14px;
+}
+
+.timeslot button {
+  background: #d4351c;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.add-slot {
+  margin-top: 8px;
+  background: #005EB8;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+  
 </style>
 </head>
 
@@ -211,23 +247,57 @@ async function loadFacilities(cluster, school) {
     const tile = document.createElement("label");
     tile.className = "tile";
     tile.innerHTML = `
-      <input type="checkbox" value="${f.facility}">
-      <h3>${f.facility}</h3>
-    
-      <div class="rate">£${f.rate} / hour</div>
-    `;
+  <input type="checkbox" value="${f.facility}">
+  <h3>${f.facility}</h3>
+  <div class="rate">£${f.rate} / hour</div>
 
-    tile.addEventListener("click", () => {
-      const cb = tile.querySelector("input");
-      cb.checked = !cb.checked;
-      tile.classList.toggle("selected", cb.checked);
-    });
+  <div class="timeslots" style="display:none">
+    <strong>Booking time slots</strong>
+
+    <div class="slots"></div>
+
+    <button type="button" class="add-slot">Add time slot</button>
+  </div>
+`;
+
+  tile.addEventListener("click", e => {
+  // Prevent clicks on inputs/buttons bubbling
+  if (e.target.tagName === "INPUT" || e.target.tagName === "BUTTON") return;
+
+  const cb = tile.querySelector("input");
+  cb.checked = !cb.checked;
+  tile.classList.toggle("selected", cb.checked);
+
+  const timeslotBox = tile.querySelector(".timeslots");
+  timeslotBox.style.display = cb.checked ? "block" : "none";
+});
+
 
     container.appendChild(tile);
   });
 
   document.getElementById("facilitySection").style.display = "block";
 }
+  function createTimeSlot(slotsContainer) {
+  const slot = document.createElement("div");
+  slot.className = "timeslot";
+
+  slot.innerHTML = `
+    <input type="date" required>
+    <input type="time" required>
+    <input type="date" required>
+    <input type="time" required>
+    <button type="button">X</button>
+  `;
+
+  // Remove slot
+  slot.querySelector("button").addEventListener("click", () => {
+    slot.remove();
+  });
+
+  slotsContainer.appendChild(slot);
+}
+
 
 /* ================= EVENTS ================= */
 document.getElementById("clusterSelect").addEventListener("change", e => {
