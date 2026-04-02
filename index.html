@@ -122,7 +122,8 @@ button {
 const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4cd48f8af3c54031bbd48566882f743e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K1MDVTz9REAxJjsPeW9JqZnCFw2jR-6IaFXtqOwnSWA";
 
 /* ================= LOAD CLUSTERS ================= */
-async function loadClusters() {
+
+  /*async function loadClusters() {
   const res = await fetch(FLOW_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -137,6 +138,29 @@ async function loadClusters() {
   select.innerHTML += `<option value="${c.cluster}">${c.cluster}</option>`;
 });
 
+}*/
+
+  async function loadClusters() {
+  console.log("Calling getClusters…");
+
+  const res = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "getClusters" })
+  });
+
+  console.log("HTTP status:", res.status);
+
+  const data = await res.json();
+  console.log("Clusters response:", data);
+
+  const select = document.getElementById("clusterSelect");
+
+  select.innerHTML = `<option value="">Select cluster</option>`;
+
+  data.clusters.forEach(c => {
+    select.innerHTML += `<option value="${c.cluster}">${c.cluster}</option>`;
+  });
 }
 
 /* ================= LOAD SCHOOLS ================= */
