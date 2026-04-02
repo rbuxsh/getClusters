@@ -158,30 +158,20 @@ async function loadClusters() {
 
 /* ================= LOAD SCHOOLS ================= */
 async function loadSchools(cluster) {
-  const res = await fetch(FLOW_URL, { ... });
-  const data = await res.json();
-  console.log("Schools response:", data);  // ← check this
-
-  const select = document.getElementById("schoolSelect");
-  let schools = data.schools || data;
-  if (!Array.isArray(schools)) schools = [];
-
-  select.innerHTML = `<option value="">Select establishment</option>`;
-
-  schools.forEach(item => {
-    let schoolName = null;
-    if (typeof item === "string") {
-      schoolName = item;
-    } else if (typeof item === "object" && item !== null) {
-      // Try common property names used by SharePoint lookups
-      schoolName = item.Value || item.Title || item.Name || item.school || item.SchoolName;
-    }
-    if (schoolName && typeof schoolName === "string" && schoolName.trim() !== "") {
-      select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
-    }
+  const res = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "getSchools", cluster })
   });
 
-  select.disabled = false;
+  const data = await res.json();
+  const select = document.getElementById("schoolSelect");
+
+  select.innerHTML = `<option value="">Select establishment</option>`;
+  data.schools.forEach(s =>
+    select.innerHTML += `<option value="${s}">${s}</option>`
+  );
+
   document.getElementById("schoolSection").style.display = "block";
 }
 
