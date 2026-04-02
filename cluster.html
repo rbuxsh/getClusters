@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ECS Facilities Hire Request</title>
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f1f1;
+  margin: 0;
+  padding: 16px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+}
+
+h1 { color: #005EB8; }
+
+fieldset {
+  border: none;
+  margin-top: 32px;
+  padding: 0;
+}
+
+legend {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+select {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+}
+
+.section {
+  display: none;
+  margin-top: 24px;
+  padding: 16px;
+  border-left: 4px solid #005EB8;
+  background: #f9fafb;
+}
+
+/* FACILITY TILES */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.tile {
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  background: #fff;
+}
+
+.tile.selected {
+  border-color: #005EB8;
+  background: #e8f1fb;
+}
+
+.tile h3 { margin: 0 0 8px; }
+.tile .rate { font-weight: bold; color: #005EB8; }
+
+.tile input { display: none; }
+
+button {
+  margin-top: 32px;
+  padding: 16px;
+  width: 100%;
+  background: #005EB8;
+  color: white;
+  border: none;
+  font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>ECS Facilities Hire Request</h1>
+
+<!-- CLUSTER -->
+<fieldset>
+  <legend>Cluster / Area</legend>
+  <select id="clusterSelect">
+    <option value="">Loading clusters…</option>
+  </select>
+</fieldset>
+
+<!-- SCHOOL -->
+<div id="schoolSection" class="section">
+  <fieldset>
+    <legend>Establishment</legend>
+    <select id="schoolSelect"></select>
+  </fieldset>
+</div>
+
+<!-- FACILITIES -->
+<div id="facilitySection" class="section">
+  <fieldset>
+    <legend>Facilities Available</legend>
+    <div id="facilityTiles" class="tiles"></div>
+  </fieldset>
+</div>
+
+<button type="submit">Submit Application</button>
+</div>
+
+<script>
+const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4cd48f8af3c54031bbd48566882f743e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K1MDVTz9REAxJjsPeW9JqZnCFw2jR-6IaFXtqOwnSWA";
+
+/* ================= LOAD CLUSTERS ================= */
+async function loadClusters() {
+  const res = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "getClusters" })
+  });
+
+  const data = await res.json();
+  const select = document.getElementById("clusterSelect");
+
+  select.innerHTML = `<option value="">Select cluster</option>`;
+  data.clusters.forEach(c =>
+    select.innerHTML += `<option value="${c}">${c}</option>`
+  );
+}
+
+/* ================= LOAD SCHOOLS ================= */
+async function loadSchools(cluster) {
+  const res = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "getSchools", cluster })
+  });
+
+  const data = await res.json();
+  const select = document.getElementById("schoolSelect");
+
+  select.innerHTML = `<option value="">Select establishment</option>`;
+  data.schools.forEach(s =>
+    select.innerHTML += `<option value="${s}">${s}</option>`
+  );
+
+  document.getElementById("schoolSection").style.display = "block";
+}
+
+/* ================= LOAD FACILITIES ================= */
+async function loadFacilities(cluster, school) {
+  const res = await fetch(FLOW_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "getFacilities", cluster, school })
+  });
+
+  const data = await res.json();
+  const container = document.getElementById("facilityTiles");
+
+  container.innerHTML = "";
+  data.facilities.forEach(f => {
+    const tile = document.createElement("label");
+    tile.className = "tile";
+    tile.innerHTML = `
+      <input type="checkbox" value="${f.facility}">
+      <h3>${f.facility}</h3>
+      <div>${f.category}</div>
+      <div class="rate">£${f.rate} / hour</div>
+    `;
+
+    tile.addEventListener("click", () => {
+      const cb = tile.querySelector("input");
+      cb.checked = !cb.checked;
+      tile.classList.toggle("selected", cb.checked);
+    });
+
+    container.appendChild(tile);
+  });
+
+  document.getElementById("facilitySection").style.display = "block";
+}
+
+/* ================= EVENTS ================= */
+document.getElementById("clusterSelect").addEventListener("change", e => {
+  document.getElementById("schoolSection").style.display = "none";
+  document.getElementById("facilitySection").style.display = "none";
+  if (e.target.value) loadSchools(e.target.value);
+});
+
+document.getElementById("schoolSelect").addEventListener("change", e => {
+  document.getElementById("facilitySection").style.display = "none";
+  if (e.target.value) {
+    loadFacilities(
+      document.getElementById("clusterSelect").value,
+      e.target.value
+    );
+  }
+});
+
+/* INIT */
+loadClusters();
+</script>
+
+</body>
+</html>
