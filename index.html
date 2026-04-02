@@ -172,7 +172,7 @@ data.schools.forEach(item => {
   const schoolName =
     typeof item === "string"
       ? item
-      : item?.school || item?.School || item?.establishment item?.Title;
+      : item?.school || item?.School || item?.establishment || item?.Title;
 
   if (!schoolName) return;
 
