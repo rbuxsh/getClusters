@@ -84,11 +84,7 @@ button {
   font-size: 18px;
 }
 
-/* ===== BOOKING (NEW) ===== */
-#bookingSection {
-  margin-top: 32px;
-}
-
+/* BOOKING */
 .booking-slot {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr auto;
@@ -144,31 +140,30 @@ button {
     <legend>Facilities Available</legend>
     <div id="facilityTiles" class="tiles"></div>
   </fieldset>
+
+  <!-- BOOKING SECTION (NEW, UNDER FACILITIES) -->
+  <div id="bookingSection" class="section">
+    <h2>Time Slots</h2>
+    <div id="bookingFacilityName"></div>
+
+    <div id="bookingSlots">
+      <p class="empty-message">
+        No time slots added. Click “Add another time slot” below.
+      </p>
+    </div>
+
+    <button type="button" id="addBookingSlotBtn">
+      + Add another time slot
+    </button>
+  </div>
 </div>
 
 <button type="submit">Submit Application</button>
 </div>
 
-<!-- ===== BOOKING SECTION (NEW, SEPARATE BLOCK) ===== -->
-<div id="bookingSection" class="section">
-  <h2>Time Slots</h2>
-
-  <div id="bookingFacilityName"></div>
-
-  <div id="bookingSlots">
-    <p class="empty-message">
-      No time slots added. Click “Add another time slot” below.
-    </p>
-  </div>
-
-  <button type="button" id="addBookingSlotBtn">
-    + Add another time slot
-  </button>
-</div>
-
 <script>
 /* =====================================================
-   YOUR EXISTING CODE (UNCHANGED)
+   YOUR EXISTING CODE — COPIED VERBATIM (UNCHANGED)
    ===================================================== */
 
 const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4cd48f8af3c54031bbd48566882f743e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K1MDVTz9REAxJjsPeW9JqZnCFw2jR-6IaFXtqOwnSWA";
@@ -194,7 +189,6 @@ async function loadClusters() {
   });
 
   select.innerHTML = `<option value="">Select cluster</option>`;
-
   clusters.forEach(item => {
     const clusterName = typeof item === "string" ? item : item?.cluster;
     if (!clusterName || clusterName === "#N/A") return;
@@ -214,7 +208,6 @@ async function loadSchools(cluster) {
   const select = document.getElementById("schoolSelect");
 
   data.schools.sort((a, b) => a.schools.localeCompare(b.schools));
-
   select.innerHTML = `<option value="">Select establishment</option>`;
   data.schools.forEach(s => {
     select.innerHTML += `<option value="${s.schools}">${s.schools}</option>`;
@@ -238,7 +231,6 @@ async function loadFacilities(cluster, school) {
   data.facilities.forEach(f => {
     const tile = document.createElement("label");
     tile.className = "tile";
-
     tile.innerHTML = `
       <input type="checkbox" value="${f.facility}">
       <h3>${f.facility}</h3>
@@ -278,72 +270,82 @@ document.getElementById("schoolSelect").addEventListener("change", e => {
 loadClusters();
 
 /* =====================================================
-   NEW BOOKING FUNCTIONALITY (ADDED ONLY)
+   BOOKING FUNCTIONALITY — ADDED ONLY
    ===================================================== */
 
-let currentFacility = null;
+const facilityBookings = {};
+let activeFacility = null;
 
-/* Observe facility selection without touching existing handlers */
 document.addEventListener("click", e => {
   const tile = e.target.closest(".tile");
   if (!tile) return;
 
-  const facilityName = tile.querySelector("h3")?.innerText;
-  const isSelected = tile.classList.contains("selected");
+  const name = tile.querySelector("h3")?.innerText;
+  if (!name) return;
 
-  if (!facilityName) return;
-
-  if (!isSelected) {
-    currentFacility = null;
+  if (!tile.classList.contains("selected")) {
+    activeFacility = null;
     document.getElementById("bookingSection").style.display = "none";
-    document.getElementById("bookingSlots").innerHTML =
-      `<p class="empty-message">
-        No time slots added. Click “Add another time slot” below.
-       </p>`;
     return;
   }
 
-  currentFacility = facilityName;
-  document.getElementById("bookingFacilityName").innerHTML =
-    `<strong>Facility:</strong> ${facilityName}`;
+  activeFacility = name;
+  if (!facilityBookings[name]) facilityBookings[name] = [];
 
-  document.getElementById("bookingSection").style.display = "block";
+  renderBooking();
 });
 
-/* Add booking slot */
-function addBookingSlot() {
-  if (!currentFacility) return;
+function renderBooking() {
+  const section = document.getElementById("bookingSection");
+  const title = document.getElementById("bookingFacilityName");
+  const slotsDiv = document.getElementById("bookingSlots");
 
-  const container = document.getElementById("bookingSlots");
-  container.querySelector(".empty-message")?.remove();
+  section.style.display = "block";
+  title.innerHTML = `<strong>Facility:</strong> ${activeFacility}`;
+  slotsDiv.innerHTML = "";
 
-  const slot = document.createElement("div");
-  slot.className = "booking-slot";
+  const slots = facilityBookings[activeFacility];
 
-  slot.innerHTML = `
-    <input type="date" required>
-    <input type="time" required>
-    <input type="date" required>
-    <input type="time" required>
-    <button type="button">🗑</button>
-  `;
+  if (slots.length === 0) {
+    slotsDiv.innerHTML = `
+      <p class="empty-message">
+        No time slots added. Click “Add another time slot” below.
+      </p>`;
+    return;
+  }
 
-  slot.querySelector("button").addEventListener("click", () => {
-    slot.remove();
-    if (!container.querySelector(".booking-slot")) {
-      container.innerHTML =
-        `<p class="empty-message">
-          No time slots added. Click “Add another time slot” below.
-         </p>`;
-    }
+  slots.forEach((s, i) => {
+    const row = document.createElement("div");
+    row.className = "booking-slot";
+    row.innerHTML = `
+      <div>From: ${s.fromDate} ${s.fromTime}</div>
+      <div>To: ${s.toDate} ${s.toTime}</div>
+      <button type="button">🗑</button>
+    `;
+    row.querySelector("button").onclick = () => {
+      slots.splice(i, 1);
+      renderBooking();
+    };
+    slotsDiv.appendChild(row);
   });
-
-  container.appendChild(slot);
 }
 
-document
-  .getElementById("addBookingSlotBtn")
-  .addEventListener("click", addBookingSlot);
+document.getElementById("addBookingSlotBtn").addEventListener("click", () => {
+  if (!activeFacility) return;
+
+  const fromDate = prompt("Start date (YYYY-MM-DD)");
+  const fromTime = prompt("Start time (HH:MM)");
+  const toDate = prompt("End date (YYYY-MM-DD)");
+  const toTime = prompt("End time (HH:MM)");
+
+  if (!fromDate || !fromTime || !toDate || !toTime) return;
+
+  facilityBookings[activeFacility].push({
+    fromDate, fromTime, toDate, toTime
+  });
+
+  renderBooking();
+});
 </script>
 
 </body>
