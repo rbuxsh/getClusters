@@ -152,18 +152,17 @@ async function loadSchools(cluster) {
   const data = await res.json();
   const select = document.getElementById("schoolSelect");
 
-  // Find the schools array (adjust property name as needed)
   let schoolsArray = data.schools || data;
   if (!Array.isArray(schoolsArray)) schoolsArray = [];
 
   select.innerHTML = `<option value="">Select establishment</option>`;
   schoolsArray.forEach(item => {
-    // Extract string from object if needed
     let schoolName = typeof item === "string" ? item : (item.Value || item.Title || item);
     select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
   });
 
-  //document.getElementById("schoolSection").style.display = "block";
+  // ✅ Show the school section
+  document.getElementById("schoolSection").style.display = "block";
 }
 
 /* ================= LOAD FACILITIES ================= */
