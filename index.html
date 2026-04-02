@@ -165,31 +165,13 @@ async function loadSchools(cluster) {
   });
 
   const data = await res.json();
-  console.log("Schools response:", data); // ✅ DEBUG
-
   const select = document.getElementById("schoolSelect");
 
-  let schools = data.schools || data;
-  if (!Array.isArray(schools)) schools = [];
+  select.innerHTML = `<option value="">Select establishment</option>`;
+  data.schools.forEach(s =>
+    select.innerHTML += `<option value="${s}">${s}</option>`
+  );
 
-  select.innerHTML = `<option value="">Select School</option>`;
-
-  schools.forEach(item => {
-    const schoolName =
-      typeof item === "string"
-        ? item
-        : item.school;
-
-    if (
-      typeof schoolName !== "string" ||
-      schoolName.trim() === "" ||
-      schoolName === "#N/A"
-    ) return;
-
-    select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
-  });
-
-  // ✅ THIS WAS MISSING
   document.getElementById("schoolSection").style.display = "block";
 }
 
