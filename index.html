@@ -72,33 +72,16 @@ select {
 .tile h3 { margin: 0 0 8px; }
 .tile .rate { font-weight: bold; color: #005EB8; }
 
-/* TIME SLOTS */
-#timeSlotsSection {
+.tile input { display: none; }
+
+button {
   margin-top: 32px;
-}
-
-.timeslot-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
-  gap: 12px;
-  padding: 12px;
-  background: #f7f7f7;
-  border-radius: 8px;
-  margin-bottom: 12px;
-}
-
-.timeslot-row button {
-  background: none;
+  padding: 16px;
+  width: 100%;
+  background: #005EB8;
+  color: white;
   border: none;
-  color: #c00000;
-  cursor: pointer;
-  font-weight: bold;
-}
-
-.empty-message {
-  padding: 12px;
-  background: #dff6ff;
-  border-radius: 6px;
+  font-size: 18px;
 }
 </style>
 </head>
@@ -121,8 +104,8 @@ select {
   <fieldset>
     <legend>Establishment</legend>
     <select id="schoolSelect">
-      <option value="">School Loading…</option>
-    </select>
+        <option value="">School Loading…</option>
+          </select>
   </fieldset>
 </div>
 
@@ -137,27 +120,10 @@ select {
 <button type="submit">Submit Application</button>
 </div>
 
-<!-- TIME SLOTS -->
-<div id="timeSlotsSection" class="section">
-  <h2>Time Slots</h2>
-
-  <div id="timeSlotsContent">
-    <p class="empty-message">
-      No time slots added. Click “Add another time slot” below.
-    </p>
-  </div>
-
-  <button type="button" id="addSlotBtn">+ Add another time slot</button>
-</div>
-
 <script>
-/* ================= STATE ================= */
-let selectedFacility = null;
-
 const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4cd48f8af3c54031bbd48566882f743e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K1MDVTz9REAxJjsPeW9JqZnCFw2jR-6IaFXtqOwnSWA";
 
-/* ================= YOUR EXISTING FUNCTIONS (UNCHANGED) ================= */
-
+/* ================= LOAD CLUSTERS ================= */
 async function loadClusters() {
   const res = await fetch(FLOW_URL, {
     method: "POST",
@@ -168,16 +134,41 @@ async function loadClusters() {
   const data = await res.json();
   const select = document.getElementById("clusterSelect");
 
-  let clusters = data.clusters || [];
-  clusters.sort((a, b) => (a.cluster || "").localeCompare(b.cluster || ""));
+  // Find the array
+  let clusters = data.clusters || data;
+  if (!Array.isArray(clusters)) clusters = [];
 
+  // 1. ✅ SORT CLUSTERS (ASCENDING A-Z)
+  clusters.sort((a, b) => {
+    // Determine the string name for 'a' and 'b'
+    const nameA = typeof a === "string" ? a : a?.cluster || "";
+    const nameB = typeof b === "string" ? b : b?.cluster || "";
+    
+    // Compare alphabetically
+    return nameA.localeCompare(nameB);
+  });
+
+  // 2. Reset the dropdown
   select.innerHTML = `<option value="">Select cluster</option>`;
-  clusters.forEach(c => {
-    if (!c.cluster || c.cluster === "#N/A") return;
-    select.innerHTML += `<option value="${c.cluster}">${c.cluster}</option>`;
+
+  // 3. Loop through sorted items
+  clusters.forEach(item => {
+    const clusterName = typeof item === "string" ? item : item?.cluster;
+
+    // ✅ HARD FILTER (MANDATORY)
+    if (
+      typeof clusterName !== "string" ||
+      clusterName.trim() === "" ||
+      clusterName === "#N/A"
+    ) {
+      return;
+    }
+
+    select.innerHTML += `<option value="${clusterName}">${clusterName}</option>`;
   });
 }
 
+/* ================= LOAD SCHOOLS ================= */
 async function loadSchools(cluster) {
   const res = await fetch(FLOW_URL, {
     method: "POST",
@@ -185,19 +176,26 @@ async function loadSchools(cluster) {
     body: JSON.stringify({ action: "getSchools", cluster })
   });
 
-  const data = await res.json();
+  const data = await res.json(); 
   const select = document.getElementById("schoolSelect");
 
-  data.schools.sort((a, b) => a.school.localeCompare(b.school));
+  // 1. Sort data.schools in ASCENDING order (A-Z)
+  // We use a.schools.localeCompare(b.schools) for A-Z
+  data.schools.sort((a, b) => a.schools.localeCompare(b.schools));
+
+  // 2. Reset the dropdown
   select.innerHTML = `<option value="">Select establishment</option>`;
 
+  // 3. Loop through sorted data.schools
   data.schools.forEach(s => {
-    select.innerHTML += `<option value="${s.school}">${s.school}</option>`;
-  });
+    select.innerHTML += `<option value="${s.schools}">${s.schools}</option>`;
+  }); 
 
   document.getElementById("schoolSection").style.display = "block";
 }
 
+
+/* ================= LOAD FACILITIES ================= */
 async function loadFacilities(cluster, school) {
   const res = await fetch(FLOW_URL, {
     method: "POST",
@@ -207,34 +205,22 @@ async function loadFacilities(cluster, school) {
 
   const data = await res.json();
   const container = document.getElementById("facilityTiles");
+
   container.innerHTML = "";
-
   data.facilities.forEach(f => {
-    const tile = document.createElement("div");
+    const tile = document.createElement("label");
     tile.className = "tile";
-
     tile.innerHTML = `
+      <input type="checkbox" value="${f.facility}">
       <h3>${f.facility}</h3>
+    
       <div class="rate">£${f.rate} / hour</div>
     `;
 
     tile.addEventListener("click", () => {
-      const isSelected = tile.classList.toggle("selected");
-
-      document.querySelectorAll(".tile.selected").forEach(t => {
-        if (t !== tile) t.classList.remove("selected");
-      });
-
-      if (!isSelected) {
-        selectedFacility = null;
-        document.getElementById("timeSlotsSection").style.display = "none";
-        document.getElementById("timeSlotsContent").innerHTML =
-          `<p class="empty-message">No time slots added. Click “Add another time slot” below.</p>`;
-        return;
-      }
-
-      selectedFacility = f.facility;
-      document.getElementById("timeSlotsSection").style.display = "block";
+      const cb = tile.querySelector("input");
+      cb.checked = !cb.checked;
+      tile.classList.toggle("selected", cb.checked);
     });
 
     container.appendChild(tile);
@@ -243,58 +229,25 @@ async function loadFacilities(cluster, school) {
   document.getElementById("facilitySection").style.display = "block";
 }
 
-/* ================= TIME SLOT LOGIC (NEW) ================= */
-
-function addTimeSlot() {
-  if (!selectedFacility) return;
-
-  const container = document.getElementById("timeSlotsContent");
-  container.querySelector(".empty-message")?.remove();
-
-  const row = document.createElement("div");
-  row.className = "timeslot-row";
-
-  row.innerHTML = `
-    <input type="date">
-    <input type="time">
-    <input type="date">
-    <input type="time">
-    <button type="button">🗑</button>
-  `;
-
-  row.querySelector("button").addEventListener("click", () => {
-    row.remove();
-    if (!container.querySelector(".timeslot-row")) {
-      container.innerHTML =
-        `<p class="empty-message">No time slots added. Click “Add another time slot” below.</p>`;
-    }
-  });
-
-  container.appendChild(row);
-}
-
 /* ================= EVENTS ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("clusterSelect").addEventListener("change", e => {
-    document.getElementById("schoolSection").style.display = "none";
-    document.getElementById("facilitySection").style.display = "none";
-    document.getElementById("timeSlotsSection").style.display = "none";
-    if (e.target.value) loadSchools(e.target.value);
-  });
-
-  document.getElementById("schoolSelect").addEventListener("change", e => {
-    document.getElementById("facilitySection").style.display = "none";
-    if (e.target.value) {
-      loadFacilities(
-        document.getElementById("clusterSelect").value,
-        e.target.value
-      );
-    }
-  });
-
-  document.getElementById("addSlotBtn").addEventListener("click", addTimeSlot);
-  loadClusters();
+document.getElementById("clusterSelect").addEventListener("change", e => {
+  document.getElementById("schoolSection").style.display = "none";
+  document.getElementById("facilitySection").style.display = "none";
+  if (e.target.value) loadSchools(e.target.value);
 });
+
+document.getElementById("schoolSelect").addEventListener("change", e => {
+  document.getElementById("facilitySection").style.display = "none";
+  if (e.target.value) {
+    loadFacilities(
+      document.getElementById("clusterSelect").value,
+      e.target.value
+    );
+  }
+});
+
+/* INIT */
+loadClusters();
 </script>
 
 </body>
