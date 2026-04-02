@@ -156,12 +156,28 @@ async function loadSchools(cluster) {
   if (!Array.isArray(schoolsArray)) schoolsArray = [];
 
   select.innerHTML = `<option value="">Select establishment</option>`;
+
   schoolsArray.forEach(item => {
-    let schoolName = typeof item === "string" ? item : (item.Value || item.Title || item);
-    select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
+    let schoolName = null;
+
+    if (typeof item === "string") {
+      schoolName = item;
+    } else if (typeof item === "number") {
+      schoolName = item.toString();
+    } else if (typeof item === "object" && item !== null) {
+      // Try common property names
+      schoolName = item.Name || item.SchoolName || item.Value || item.Title || item.Text || item.Label;
+      if (!schoolName) {
+        console.warn("Unknown school object:", item);
+        return; // skip this item
+      }
+    }
+
+    if (schoolName) {
+      select.innerHTML += `<option value="${schoolName}">${schoolName}</option>`;
+    }
   });
 
-  // ✅ Show the school section
   document.getElementById("schoolSection").style.display = "block";
 }
 
