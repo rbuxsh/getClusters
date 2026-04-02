@@ -95,7 +95,7 @@ button {
 <fieldset>
   <legend>Cluster / Area</legend>
   <select id="clusterSelect">
-    <option value="">Select Cluster</option>
+    <option value="">Loading clusters…</option>
   </select>
 </fieldset>
 
@@ -122,8 +122,7 @@ button {
 const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/4cd48f8af3c54031bbd48566882f743e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K1MDVTz9REAxJjsPeW9JqZnCFw2jR-6IaFXtqOwnSWA";
 
 /* ================= LOAD CLUSTERS ================= */
-
-  /*async function loadClusters() {
+async function loadClusters() {
   const res = await fetch(FLOW_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -134,33 +133,9 @@ const FLOW_URL = "https://defaultfed993064d2d4409959dd0edb7304a.0b.environment.a
   const select = document.getElementById("clusterSelect");
 
   select.innerHTML = `<option value="">Select cluster</option>`;
-  data.clusters.forEach(c => {
-  select.innerHTML += `<option value="${c.cluster}">${c.cluster}</option>`;
-});
-
-}*/
-
-  async function loadClusters() {
-  console.log("Calling getClusters…");
-
-  const res = await fetch(FLOW_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "getClusters" })
-  });
-
-  console.log("HTTP status:", res.status);
-
-  const data = await res.json();
-  console.log("Clusters response:", data);
-
-  const select = document.getElementById("clusterSelect");
-
-  select.innerHTML = `<option value="">Select cluster</option>`;
-
-  data.clusters.forEach(c => {
-    select.innerHTML += `<option value="${c.cluster}">${c.cluster}</option>`;
-  });
+  data.clusters.forEach(c =>
+    select.innerHTML += `<option value="${c}">${c}</option>`
+  );
 }
 
 /* ================= LOAD SCHOOLS ================= */
@@ -179,20 +154,8 @@ async function loadSchools(cluster) {
     select.innerHTML += `<option value="${s}">${s}</option>`
   );
 
- // document.getElementById("schoolSection").style.display = "block";}
-
-  // this is temp
-document.getElementById("clusterSelect").addEventListener("change", e => {
-  console.log("Cluster value:", e.target.value, typeof e.target.value);
-
-  document.getElementById("schoolSection").style.display = "none";
-  document.getElementById("facilitySection").style.display = "none";
-
-  if (e.target.value) {
-    loadSchools(e.target.value);
-  }
-});
-/// temp end here----
+  document.getElementById("schoolSection").style.display = "block";
+}
 
 /* ================= LOAD FACILITIES ================= */
 async function loadFacilities(cluster, school) {
